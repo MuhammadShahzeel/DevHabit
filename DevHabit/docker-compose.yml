@@ -1,4 +1,5 @@
 services:
+  # .NET API
   devhabit.api:
     image: ${DOCKER_REGISTRY-}devhabitapi
     build:
@@ -11,26 +12,42 @@ services:
       # Seq
       # - OTEL_EXPORTER_OTLP_ENDPOINT=http://devhabit.seq:5341/ingest/otlp
       # - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-  
-      
 
       # Aspire Dashboard
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://devhabit.aspire-dashboard:18889
-      - OTEL_EXPORT_OTLP_PROTOCOL=grpc
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+  
 
-  devhabit.seq:
-    image: datalust/seq:2024.3
-    environment:
-      ACCEPT_EULA: "Y"
-    volumes:
-      - ./.containers/seq_data:/data
-    ports:
-      - 8080:80
-      - 5341:5341
+  # Seq for centralized logging
+  # devhabit.seq:
+  #   image: datalust/seq:2024.3
+  #   environment:
+  #     ACCEPT_EULA: "Y"
+  #   volumes:
+  #     - ./.containers/seq_data:/data
+  #   ports:
+  #     - 8080:80
+  #     - 5341:5341
 
+  # Aspire Dashboard for logs, metrics, and distributed tracing
   devhabit.aspire-dashboard:
     image: mcr.microsoft.com/dotnet/aspire-dashboard:9.0
     environment:
       DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS: true
     ports:
       - 18888:18888
+
+  # SQL Server Database
+  devhabit.sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourStrong@Password123
+    ports:
+      - 1433:1433
+    volumes:
+      - mssql_data:/var/opt/mssql
+ 
+
+volumes:
+  mssql_data:
